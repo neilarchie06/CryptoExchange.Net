@@ -6,8 +6,8 @@ using System.Threading.Tasks;
 
 namespace CryptoExchange.Net.Processors
 {
-    public interface IDataReceiver
+    public interface IDataRequester
     {
-        Task<CallResult<T>> ReceiveAsync<T>();
+        Task<CallResult<TOutput>> RequestAsync<TInput, TOutput>(RequestData<TInput> data);
     }
 }

@@ -9,6 +9,13 @@ namespace CryptoExchange.Net.Processors
 {
     public class UrlParametersSerializer : IDataSerializer<string>
     {
+        private ArrayParametersSerialization _arraySerialization;
+
+        public UrlParametersSerializer(ArrayParametersSerialization arraySerialization)
+        {
+            _arraySerialization = arraySerialization;
+        }
+
         public Task<CallResult<string>> SerializeAsync<TInput>(TInput data)
         {
             if (data == null)
@@ -23,8 +30,8 @@ namespace CryptoExchange.Net.Processors
             {
                 if (parameter.Value.GetType().IsArray)
                 {
-                    //foreach (var item in (object[])parameter.Value)
-                    //    httpValueCollection.Add(arraySerialization == ArrayParametersSerialization.Array ? parameter.Key + "[]" : parameter.Key, item.ToString());
+                    foreach (var item in (object[])parameter.Value)
+                        httpValueCollection.Add(_arraySerialization == ArrayParametersSerialization.Array ? parameter.Key + "[]" : parameter.Key, item.ToString());
                 }
                 else
                     httpValueCollection.Add(parameter.Key, parameter.Value.ToString());

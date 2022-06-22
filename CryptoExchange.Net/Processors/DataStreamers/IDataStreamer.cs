@@ -1,4 +1,5 @@
 ﻿using CryptoExchange.Net.Objects;
+using CryptoExchange.Net.Sockets;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -6,8 +7,8 @@ using System.Threading.Tasks;
 
 namespace CryptoExchange.Net.Processors
 {
-    public interface IDataSender
+    public interface IDataStreamer
     {
-        Task<CallResult<TOutput>> SendAsync<TInput, TOutput>(RequestData<TInput> data);
+        Task<CallResult<UpdateSubscription>> SubscribeAsync<T>(StreamData<T> streamData);
     }
 }
