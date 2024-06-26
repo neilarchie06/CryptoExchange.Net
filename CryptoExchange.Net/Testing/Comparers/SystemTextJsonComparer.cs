@@ -26,8 +26,13 @@ namespace CryptoExchange.Net.Testing.Comparers
             if (nestedJsonProperty != null)
             {
                 var nested = nestedJsonProperty.Split('.');
-                foreach(var nest in nested)
-                    jsonObject = jsonObject![nest];
+                foreach (var nest in nested)
+                {
+                    if (int.TryParse(nest, out var index))
+                        jsonObject = jsonObject![index];
+                    else
+                        jsonObject = jsonObject![nest];
+                }
             }
 
             if (userSingleArrayItem)
@@ -52,8 +57,13 @@ namespace CryptoExchange.Net.Testing.Comparers
                     else
                     {
                         if (dict[dictProp.Name] == default && dictProp.Value.Type != JTokenType.Null)
+                        {
+                            if (dictProp.Value.ToString() == "")
+                                continue;
+
                             // Property value not correct
                             throw new Exception($"{method}: Dictionary entry `{dictProp.Name}` has no value while input json has value {dictProp.Value}");
+                        }
                     }
                 }
             }
@@ -77,6 +87,10 @@ namespace CryptoExchange.Net.Testing.Comparers
                     else if (jObj.Type == JTokenType.Array)
                     {
                         var resultObj = enumerator.Current;
+                        if (resultObj is string)
+                            // string list
+                            continue;
+
                         var resultProps = resultObj.GetType().GetProperties().Select(p => (p, p.GetCustomAttributes(typeof(ArrayPropertyAttribute), true).Cast<ArrayPropertyAttribute>().SingleOrDefault()));
                         var arrayConverterProperty = resultObj.GetType().GetCustomAttributes(typeof(JsonConverterAttribute), true).FirstOrDefault();
                         var jsonConverter = ((JsonConverterAttribute)arrayConverterProperty!).ConverterType;
@@ -85,9 +99,9 @@ namespace CryptoExchange.Net.Testing.Comparers
                             continue;
 
                         int i = 0;
-                        foreach (var item in jObj.Values())
+                        foreach (var item in jObj.Children())
                         {
-                            var arrayProp = resultProps.SingleOrDefault(p => p.Item2!.Index == i).p;
+                            var arrayProp = resultProps.Where(p => p.Item2 != null).SingleOrDefault(p => p.Item2!.Index == i).p;
                             if (arrayProp != null)
                                 CheckPropertyValue(method, item, arrayProp.GetValue(resultObj), arrayProp.PropertyType, arrayProp.Name, "Array index " + i, ignoreProperties!);
                             i++;
@@ -162,7 +176,7 @@ namespace CryptoExchange.Net.Testing.Comparers
 
                     if (dictProp.Value.Type == JTokenType.Object)
                     {
-                        CheckObject(method, dictProp, dict[dictProp.Name]!, ignoreProperties);
+                        CheckPropertyValue(method, dictProp.Value, dict[dictProp.Name]!, dict[dictProp.Name].GetType(), null, null, ignoreProperties);
                     }
                     else
                     {
@@ -180,7 +194,10 @@ namespace CryptoExchange.Net.Testing.Comparers
                 var enumerator = list.GetEnumerator();
                 foreach (JToken jtoken in jObjs)
                 {
-                    enumerator.MoveNext();
+                    var moved = enumerator.MoveNext();
+                    if (!moved)
+                        throw new Exception("Enumeration not moved; incorrect amount of results?");
+
                     var typeConverter = enumerator.Current.GetType().GetCustomAttributes(typeof(JsonConverterAttribute), true);
                     if (typeConverter.Length != 0 && ((JsonConverterAttribute)typeConverter.First()).ConverterType != typeof(ArrayConverter))
                         // Custom converter for the type, skip
@@ -207,9 +224,9 @@ namespace CryptoExchange.Net.Testing.Comparers
                             continue;
 
                         int i = 0;
-                        foreach (var item in jtoken.Values())
+                        foreach (var item in jtoken.Children())
                         {
-                            var arrayProp = resultProps.SingleOrDefault(p => p.Item2!.Index == i).p;
+                            var arrayProp = resultProps.Where(p => p.Item2 != null).SingleOrDefault(p => p.Item2!.Index == i).p;
                             if (arrayProp != null)
                                 CheckPropertyValue(method, item, arrayProp.GetValue(resultObj), propertyType, arrayProp.Name, "Array index " + i, ignoreProperties);
 
@@ -260,9 +277,9 @@ namespace CryptoExchange.Net.Testing.Comparers
                 else if (objectValue is DateTime time)
                 {
                     if (time != DateTimeConverter.ParseFromString(jsonValue.Value<string>()!))
-                        throw new Exception($"{method}: {property} not equal: {jsonValue.Value<decimal>()} vs {time}");
+                        throw new Exception($"{method}: {property} not equal: {jsonValue.Value<string>()} vs {time}");
                 }
-                else if (propertyType.IsEnum)
+                else if (propertyType.IsEnum || Nullable.GetUnderlyingType(propertyType)?.IsEnum == true)
                 {
                     // TODO enum comparing
                 }
@@ -277,6 +294,10 @@ namespace CryptoExchange.Net.Testing.Comparers
                 {
                     if (time != DateTimeConverter.ParseFromDouble(jsonValue.Value<long>()!))
                         throw new Exception($"{method}: {property} not equal: {jsonValue.Value<decimal>()} vs {time}");
+                }
+                else if (propertyType.IsEnum || Nullable.GetUnderlyingType(propertyType)?.IsEnum == true)
+                {
+                    // TODO enum comparing
                 }
                 else if (jsonValue.Value<long>() != Convert.ToInt64(objectValue))
                 {
