@@ -439,6 +439,10 @@ namespace CryptoExchange.Net.Clients
                 var outputOriginalData = ApiOptions.OutputOriginalData ?? ClientOptions.OutputOriginalData;
                 if (outputOriginalData || MessageHandler.RequiresSeekableStream || !response.IsSuccessStatusCode)
                 {
+                    // Create a seekable stream from the response stream if:
+                    // 1. We need to output the original data
+                    // 2. The message handler requires a seekable stream
+                    // 3. The response indicates error and we want to output (part of) the returned data
                     responseStream = await CopyStreamAsync(responseStream).ConfigureAwait(false);
                     using var reader = new StreamReader(responseStream, Encoding.UTF8, false, 4096, true);
                     if (outputOriginalData)
