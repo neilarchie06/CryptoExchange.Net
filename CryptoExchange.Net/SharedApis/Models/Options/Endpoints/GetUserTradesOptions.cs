@@ -5,20 +5,20 @@ using System.Text;
 namespace CryptoExchange.Net.SharedApis
 {
     /// <summary>
-    /// Options for requesting funding rate history
+    /// Options for requesting user trades
     /// </summary>
-    public class GetFundingRateHistoryOptions : PaginatedEndpointOptions<GetFundingRateHistoryRequest>
+    public class GetUserTradesOptions : PaginatedEndpointOptions<GetUserTradesRequest>
     {
         /// <summary>
         /// ctor
         /// </summary>
-        public GetFundingRateHistoryOptions(bool supportsAscending, bool supportsDescending, bool timeFilterSupported, int maxLimit, bool needsAuthentication) 
-            : base(supportsAscending, supportsDescending, timeFilterSupported, maxLimit, needsAuthentication)
+        public GetUserTradesOptions(bool supportsAscending, bool supportsDescending, bool timeFilterSupported, int maxLimit) 
+            : base(supportsAscending, supportsDescending, timeFilterSupported, maxLimit, true)
         {
         }
 
         /// <inheritdoc />
-        public override Error? ValidateRequest(string exchange, GetFundingRateHistoryRequest request, TradingMode? tradingMode, TradingMode[] supportedApiTypes)
+        public override Error? ValidateRequest(string exchange, GetUserTradesRequest request, TradingMode? tradingMode, TradingMode[] supportedApiTypes)
         {
             if (!SupportsAscending && request.Direction == DataDirection.Ascending)
                 return ArgumentError.Invalid(nameof(GetWithdrawalsRequest.Direction), $"Ascending direction is not supported");
