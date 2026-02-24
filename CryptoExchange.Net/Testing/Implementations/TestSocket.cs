@@ -112,6 +112,8 @@ namespace CryptoExchange.Net.Testing.Implementations
 
         public async Task ReconnectAsync()
         {
+            await Task.Delay(1).ConfigureAwait(false);
+
             if (OnReconnecting != null)
                 await OnReconnecting().ConfigureAwait(false);
 
