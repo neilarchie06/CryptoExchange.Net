@@ -67,6 +67,24 @@ Make a one time donation in a crypto currency of your choice. If you prefer to d
 Alternatively, sponsor me on Github using [Github Sponsors](https://github.com/sponsors/JKorf). 
 
 ## Release notes
+* Version 10.7.0 - 24 Feb 2026
+    * Added parsing of REST response data up to 128 characters for error responses
+    * Added check for invalid json in JsonSocketMessageHandler
+    * Added virtual GetTypeIdentifierNonJson for handling non-json messages in JsonSocketMessageHandler
+    * Added additional options to Rest client options for configuring HttpClient
+    * Updated INextPageToken parameter on Shared interfaces to PageRequest type, functionality unchanged
+    * Added SupportsAscending and SupportsDescending properties to PaginatedEndpointOptions to expose supported data directions
+    * Added MaxAge property to PaginatedEndpointOptions to expose the max age of data that can be requested
+    * Added Direction property to Shared interfaces paginated requests to configure pagination data direction
+    * Removed PaginationSupport property from PaginatedEndpointOptions, replaced by above new properties
+    * Updated Shared GetTradeHistoryRequest EndTime property to be optional
+    * Updated I(Futures/Spot)OrderRestClient.GetClosed(Futures/Spot)OrdersOptions from PaginatedEndpointOptions<GetClosedOrdersRequest> to GetClosedOrdersOptions
+    * Updated I(Futures/Spot)OrderRestClient.Get(Futures/Spot)UserTradesOptions from PaginatedEndpointOptions<GetUserTradesRequest> to GetUserTradesOptions
+    * Updated rate limiting PathStartFilter to ignore added or missing slash before the path
+    * Updated internal lock for subscription to ReaderWriterLockSlim on SocketConnection
+    * Removed check for OnlyTrackProvidedSymbols in combination with empty TrackedSymbols list
+    * Fixed KlineTracker throwing exception if there is no data in the initial snapshot
+
 * Version 10.6.2 - 17 Feb 2026
     * Fix for websocket queries which don't expects response getting stuck in subscribing state
 
