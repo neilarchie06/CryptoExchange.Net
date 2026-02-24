@@ -32,10 +32,29 @@ namespace CryptoExchange.Net.Objects.Options
 #else
             = new Version(1, 1);
 #endif
+
         /// <summary>
-        /// Http client keep alive interval for keeping connections open
+        /// Http client keep alive interval for keeping connections open. Only applied when using dotnet8.0 or higher and dependency injection
         /// </summary>
         public TimeSpan? HttpKeepAliveInterval { get; set; } = TimeSpan.FromSeconds(15);
+#if NET5_0_OR_GREATER
+        /// <summary>
+        /// Enable multiple simultaneous HTTP 2 connections. Only applied when using dependency injection
+        /// </summary>
+        public bool HttpEnableMultipleHttp2Connections { get; set; } = false;
+        /// <summary>
+        /// Lifetime of pooled HTTP connections; the time before a connection is recreated. Only applied when using dependency injection
+        /// </summary>
+        public TimeSpan HttpPooledConnectionLifetime { get; set; } = TimeSpan.FromMinutes(15);
+        /// <summary>
+        /// Idle timeout of pooled HTTP connections; the time before an open connection is closed when there are no requests. Only applied when using dependency injection
+        /// </summary>
+        public TimeSpan HttpPooledConnectionIdleTimeout { get; set; } = TimeSpan.FromMinutes(2);
+        /// <summary>
+        /// Max number of connections per server. Only applied when using dependency injection
+        /// </summary>
+        public int HttpMaxConnectionsPerServer { get; set; } = int.MaxValue;
+#endif 
 
         /// <summary>
         /// Set the values of this options on the target options
@@ -54,6 +73,12 @@ namespace CryptoExchange.Net.Objects.Options
             item.CachingMaxAge = CachingMaxAge;
             item.HttpVersion = HttpVersion;
             item.HttpKeepAliveInterval = HttpKeepAliveInterval;
+#if NET5_0_OR_GREATER
+            item.HttpMaxConnectionsPerServer = HttpMaxConnectionsPerServer;
+            item.HttpPooledConnectionLifetime = HttpPooledConnectionLifetime;
+            item.HttpPooledConnectionIdleTimeout = HttpPooledConnectionIdleTimeout;
+            item.HttpEnableMultipleHttp2Connections = HttpEnableMultipleHttp2Connections;
+#endif
             return item;
         }
     }

@@ -12,14 +12,16 @@ namespace CryptoExchange.Net.Requests
     public class RequestFactory : IRequestFactory
     {
         private HttpClient? _httpClient;
+        private RestExchangeOptions? _options;
 
         /// <inheritdoc />
         public void Configure(RestExchangeOptions options, HttpClient? client = null)
         {
             if (client == null)
-                client = CreateClient(options.Proxy, options.RequestTimeout, options.HttpKeepAliveInterval);
+                client = CreateClient(options);
 
             _httpClient = client;
+            _options = options;
         }
 
         /// <inheritdoc />
@@ -39,15 +41,20 @@ namespace CryptoExchange.Net.Requests
         /// <inheritdoc />
         public void UpdateSettings(ApiProxy? proxy, TimeSpan requestTimeout, TimeSpan? httpKeepAliveInterval)
         {
-            _httpClient = CreateClient(proxy, requestTimeout, httpKeepAliveInterval);
+            var newOptions = new RestExchangeOptions();
+            _options!.Set(newOptions);
+            newOptions.Proxy = proxy;
+            newOptions.RequestTimeout = requestTimeout;
+            newOptions.HttpKeepAliveInterval = httpKeepAliveInterval;
+            _httpClient = CreateClient(newOptions);
         }
 
-        private static HttpClient CreateClient(ApiProxy? proxy, TimeSpan requestTimeout, TimeSpan? httpKeepAliveInterval)
+        private static HttpClient CreateClient(RestExchangeOptions options)
         {
-            var handler = LibraryHelpers.CreateHttpClientMessageHandler(proxy, httpKeepAliveInterval);
+            var handler = LibraryHelpers.CreateHttpClientMessageHandler(options);
             var client = new HttpClient(handler)
             {
-                Timeout = requestTimeout                
+                Timeout = options.RequestTimeout
             };
             return client;
         }
