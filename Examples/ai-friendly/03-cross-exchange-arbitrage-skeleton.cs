@@ -89,13 +89,13 @@ async Task ScanSymbolAsync(SharedSymbol symbol, List<IBookTickerRestClient> clie
 async Task<Quote?> GetBookAsync(IBookTickerRestClient client, SharedSymbol symbol)
 {
     var result = await client.GetBookTickerAsync(new GetBookTickerRequest(symbol));
-    if (!result.Success || result.Data?.BestBidPrice == null || result.Data.BestAskPrice == null)
+    if (!result.Success || result.Data == null)
         return null;
 
     return new Quote(
         Exchange: client.Exchange,
-        BidPrice: result.Data.BestBidPrice.Value,
-        AskPrice: result.Data.BestAskPrice.Value);
+        BidPrice: result.Data.BestBidPrice,
+        AskPrice: result.Data.BestAskPrice);
 }
 
 record Quote(string Exchange, decimal BidPrice, decimal AskPrice);
@@ -107,6 +107,6 @@ record Quote(string Exchange, decimal BidPrice, decimal AskPrice);
 //   ✓ Track inventory on both venues — can't sell what you don't have
 //   ✓ Account for withdrawal delays if rebalancing inventory
 //   ✓ Set hard P&L stops, position limits, maximum exposure per pair
-//   ✓ Use ISpotOrderRestClient with reduce-only / IOC order types for atomic execution
+//   ✓ Use ISpotOrderRestClient with exchange-supported IOC/fill-or-kill order options where available
 //   ✓ Monitor connection health and have failover logic
 //   ✓ Log everything — arbitrage P&L analysis requires complete audit trails

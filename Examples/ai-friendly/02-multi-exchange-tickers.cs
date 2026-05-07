@@ -56,7 +56,7 @@ async Task<TickerSnapshot?> FetchAsync(ISpotTickerRestClient client, SharedSymbo
         Exchange:  client.Exchange,
         Symbol:    result.Data.Symbol,
         LastPrice: result.Data.LastPrice ?? 0,
-        Volume:    result.Data.Volume ?? 0);
+        Volume:    result.Data.Volume);
 }
 
 record TickerSnapshot(string Exchange, string Symbol, decimal LastPrice, decimal Volume);

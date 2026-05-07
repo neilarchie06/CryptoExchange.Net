@@ -54,12 +54,12 @@ var sub2 = await okxTickerSocket.SubscribeToTickerUpdatesAsync(
 Console.WriteLine("Press Enter to exit");
 Console.ReadLine();
 
-if (sub1.Success) await binanceTickerSocket.UnsubscribeAsync(sub1.Data);
-if (sub2.Success) await okxTickerSocket.UnsubscribeAsync(sub2.Data);
+if (sub1.Success) await sub1.Data.CloseAsync();
+if (sub2.Success) await sub2.Data.CloseAsync();
 
 // Common variations:
-//   Add Bybit:           ITickerRestClient bybit = new BybitRestClient().V5Api.SharedClient;
-//   Add Kraken:          ITickerRestClient kraken = new KrakenRestClient().SpotApi.SharedClient;
-//   Add Coinbase:        ITickerRestClient cb = new CoinbaseRestClient().AdvancedTradeApi.SharedClient;
+//   Add Bybit:           ISpotTickerRestClient bybit = new BybitRestClient().V5Api.SharedClient;
+//   Add Kraken:          ISpotTickerRestClient kraken = new KrakenRestClient().SpotApi.SharedClient;
+//   Add Coinbase:        ISpotTickerRestClient cb = new CoinbaseRestClient().AdvancedTradeApi.SharedClient;
 //   Other interfaces:    ISpotOrderRestClient (place/cancel orders), IBalanceRestClient (balances),
 //                        IFuturesOrderRestClient, IPositionRestClient, IOrderBookSocketClient, etc.
