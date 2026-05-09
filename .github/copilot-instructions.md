@@ -26,7 +26,7 @@ Same code works on every exchange that implements the interface. Use `Task.WhenA
 
 ## Single-exchange code uses the exchange's own client
 
-For Binance-only code, use `BinanceRestClient` directly (see Binance.Net repo `CLAUDE.md`). SharedApis is for portability — use it when you need that.
+For Binance-only code, use `BinanceRestClient` directly (see Binance.Net repo `AGENTS.md`). SharedApis is for portability — use it when you need that.
 
 ## Result pattern
 
@@ -49,4 +49,4 @@ Each exchange library implements a subset. Check exchange docs for support matri
 
 ## Reference
 
-For detailed patterns see `CLAUDE.md` and `llms.txt` in repo root, `examples/ai-friendly/` for compilable examples.
+For detailed patterns see `AGENTS.md` and `llms.txt` in repo root, `examples/ai-friendly/` for compilable examples.

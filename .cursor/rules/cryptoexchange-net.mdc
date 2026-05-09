@@ -65,7 +65,7 @@ var results = await Task.WhenAll(tasks);
 
 ## Reference
 
-- `CLAUDE.md` in repo root has fuller examples
+- `AGENTS.md` in repo root has fuller examples
 - `llms.txt` for AI context
 - `Examples/ai-friendly/` for compilable examples
-- For single-exchange code, see that exchange's library (e.g., Binance.Net `CLAUDE.md`)
+- For single-exchange code, see that exchange's library (e.g., Binance.Net `AGENTS.md`)
