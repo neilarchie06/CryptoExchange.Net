@@ -24,8 +24,9 @@ namespace CryptoExchange.Net.Interfaces
         /// <param name="interval">Kline interval</param>
         /// <param name="limit">The max amount of klines to retain</param>
         /// <param name="period">The max period the data should be retained</param>
+        /// <param name="exchangeParameters">Exchange parameters</param>
         /// <returns></returns>
-        IKlineTracker CreateKlineTracker(SharedSymbol symbol, SharedKlineInterval interval, int? limit = null, TimeSpan? period = null);
+        IKlineTracker CreateKlineTracker(SharedSymbol symbol, SharedKlineInterval interval, int? limit = null, TimeSpan? period = null, ExchangeParameters? exchangeParameters = null);
 
         /// <summary>
         /// Whether the factory supports creating a TradeTracker instance for this symbol
@@ -39,7 +40,8 @@ namespace CryptoExchange.Net.Interfaces
         /// <param name="symbol">The symbol</param>
         /// <param name="limit">The max amount of trades to retain</param>
         /// <param name="period">The max period the data should be retained</param>
+        /// <param name="exchangeParameters">Exchange parameters</param>
         /// <returns></returns>
-        ITradeTracker CreateTradeTracker(SharedSymbol symbol, int? limit = null, TimeSpan? period = null);
+        ITradeTracker CreateTradeTracker(SharedSymbol symbol, int? limit = null, TimeSpan? period = null, ExchangeParameters? exchangeParameters = null);
     }
 }

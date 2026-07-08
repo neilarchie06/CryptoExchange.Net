@@ -21,6 +21,7 @@ namespace CryptoExchange.Net.Trackers.Trades
         private SyncStatus _status;
         private long _snapshotId;
         private bool _startWithSnapshot;
+        private ExchangeParameters? _exchangeParameters;
 
         /// <summary>
         /// The internal data structure
@@ -154,12 +155,14 @@ namespace CryptoExchange.Net.Trackers.Trades
             ITradeSocketClient socketClient,
             SharedSymbol symbol,
             int? limit = null,
-            TimeSpan? period = null)
+            TimeSpan? period = null,
+            ExchangeParameters? exchangeParameters = null)
         {
             _logger = logger ?? new NullLogger<TradeTracker>();
             _recentRestClient = recentRestClient;
             _historyRestClient = historyRestClient;
             _socketClient = socketClient;
+            _exchangeParameters = exchangeParameters;
             Exchange = socketClient.Exchange;
             Symbol = symbol;
             SymbolName = socketClient.FormatSymbol(symbol.BaseAsset, symbol.QuoteAsset, symbol.TradingMode, symbol.DeliverTime);
@@ -203,7 +206,7 @@ namespace CryptoExchange.Net.Trackers.Trades
             _startWithSnapshot = startWithSnapshot;
             Status = SyncStatus.Syncing;
             _logger.TradeTrackerStarting(SymbolName);
-            var subResult = await _socketClient.SubscribeToTradeUpdatesAsync(new SubscribeTradeRequest(Symbol),
+            var subResult = await _socketClient.SubscribeToTradeUpdatesAsync(new SubscribeTradeRequest(Symbol, exchangeParameters: _exchangeParameters),
                  update =>
                  {
                      AddData(update.Data);
@@ -257,7 +260,7 @@ namespace CryptoExchange.Net.Trackers.Trades
             if (_historyRestClient != null)
             {
                 var startTime = Period == null ? DateTime.UtcNow.AddMinutes(-5) : DateTime.UtcNow.Add(-Period.Value);
-                var request = new GetTradeHistoryRequest(Symbol, startTime, DateTime.UtcNow);
+                var request = new GetTradeHistoryRequest(Symbol, startTime, DateTime.UtcNow, exchangeParameters: _exchangeParameters);
                 var data = new List<SharedTrade>();
                 await foreach (var result in ExchangeHelpers.ExecutePages(_historyRestClient.GetTradeHistoryAsync, request).ConfigureAwait(false))
                 {
@@ -278,7 +281,7 @@ namespace CryptoExchange.Net.Trackers.Trades
                 if (Limit.HasValue)
                     limit = Math.Min(_recentRestClient.GetRecentTradesOptions.MaxLimit, Limit.Value);
 
-                var snapshot = await _recentRestClient.GetRecentTradesAsync(new GetRecentTradesRequest(Symbol, limit)).ConfigureAwait(false);
+                var snapshot = await _recentRestClient.GetRecentTradesAsync(new GetRecentTradesRequest(Symbol, limit, exchangeParameters: _exchangeParameters)).ConfigureAwait(false);
                 if (!snapshot.Success)
                 {
                     return CallResult.Fail(snapshot.Error);

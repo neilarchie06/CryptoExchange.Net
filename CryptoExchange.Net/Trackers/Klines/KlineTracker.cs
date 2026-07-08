@@ -19,6 +19,7 @@ namespace CryptoExchange.Net.Trackers.Klines
         private readonly IKlineRestClient _restClient;
         private SyncStatus _status;
         private bool _startWithSnapshot;
+        private ExchangeParameters? _exchangeParameters;
 
         /// <summary>
         /// The internal data structure
@@ -157,9 +158,11 @@ namespace CryptoExchange.Net.Trackers.Klines
             SharedSymbol symbol,
             SharedKlineInterval interval,
             int? limit = null,
-            TimeSpan? period = null)
+            TimeSpan? period = null,
+            ExchangeParameters? exchangeParameters = null)
         {
             _logger = logger ?? new NullLogger<KlineTracker>();
+            _exchangeParameters = exchangeParameters;
             Symbol = symbol;
             SymbolName = socketClient.FormatSymbol(symbol.BaseAsset, symbol.QuoteAsset, symbol.TradingMode, symbol.DeliverTime);
             Exchange = restClient.Exchange;
@@ -180,7 +183,7 @@ namespace CryptoExchange.Net.Trackers.Klines
             Status = SyncStatus.Syncing;
             _logger.KlineTrackerStarting(SymbolName);
 
-            var subResult = await _socketClient.SubscribeToKlineUpdatesAsync(new SubscribeKlineRequest(Symbol, Interval),
+            var subResult = await _socketClient.SubscribeToKlineUpdatesAsync(new SubscribeKlineRequest(Symbol, Interval, exchangeParameters: _exchangeParameters),
                  update =>
                  {
                      AddOrUpdate(update.Data);
@@ -237,7 +240,7 @@ namespace CryptoExchange.Net.Trackers.Klines
 
             var limit = Math.Min(_restClient.GetKlinesOptions.MaxLimit, Limit ?? 100);
 
-            var request = new GetKlinesRequest(Symbol, Interval, startTime, DateTime.UtcNow, limit: limit);
+            var request = new GetKlinesRequest(Symbol, Interval, startTime, DateTime.UtcNow, limit: limit, exchangeParameters: _exchangeParameters);
             var data = new List<SharedKline>();
             await foreach (var result in ExchangeHelpers.ExecutePages(_restClient.GetKlinesAsync, request).ConfigureAwait(false))
             {
