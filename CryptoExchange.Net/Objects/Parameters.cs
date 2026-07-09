@@ -233,7 +233,7 @@ namespace CryptoExchange.Net.Objects
         /// Add key as comma separated values
         /// </summary>
 #if NET5_0_OR_GREATER
-        public void AddCommaSeparated<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor | DynamicallyAccessedMemberTypes.PublicFields)] T>(string key, IEnumerable<T> values)
+        public void AddCommaSeparated<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor | DynamicallyAccessedMemberTypes.PublicFields)] T>(string key, IEnumerable<T>? values)
 #else
         public void AddCommaSeparated<T>(string key, IEnumerable<T>? values)
 #endif
