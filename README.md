@@ -127,6 +127,11 @@ Various:
   * PlatformInfo now required support environment names in the constructor
 
 ## Release notes
+* Version 12.1.0 - 09 Jul 2026
+    * Added ExchangeParameters parameter to KlineTracker, TradeTracker and ITrackerFactory methods
+    * Updated some testing logic
+    * Fixed nullability operator on Parameters.AddCommaSeperated
+
 * Version 12.0.2 - 01 Jul 2026
     * Updated test validation to output a list of issues instead of throwing on the first
 
