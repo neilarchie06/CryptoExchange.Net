@@ -198,6 +198,9 @@ namespace CryptoExchange.Net.Converters.SystemTextJson
                 return new DateTime(year, month, day, 0, 0, 0, DateTimeKind.Utc);
             }
 
+            if (stringValue.EndsWith("+00:00:00"))
+                return DateTime.Parse(stringValue.Substring(0, stringValue.Length - 9), CultureInfo.InvariantCulture, DateTimeStyles.AdjustToUniversal | DateTimeStyles.AssumeUniversal);
+
             return DateTime.Parse(stringValue, CultureInfo.InvariantCulture, DateTimeStyles.AdjustToUniversal | DateTimeStyles.AssumeUniversal);
         }
 

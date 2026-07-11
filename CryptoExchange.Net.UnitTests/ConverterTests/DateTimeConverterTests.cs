@@ -15,6 +15,7 @@ namespace CryptoExchange.Net.UnitTests.ConverterTests
         [TestCase("1620777600000")]
         [TestCase("2021-05-12T00:00:00.000Z")]
         [TestCase("2021-05-12T00:00:00.000000000Z")]
+        [TestCase("2021-05-12 00:00:00.000000+00:00:00")]
         [TestCase("0.000000", true)]
         [TestCase("0", true)]
         [TestCase("", true)]
