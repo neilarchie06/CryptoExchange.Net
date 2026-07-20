@@ -30,6 +30,14 @@ var ticker = await binance.GetSpotTickerAsync(new GetTickerRequest(symbol));
 
 `SharedSymbol(TradingMode.Spot, "BTC", "USDT")` is portable. Each library translates to its native format internally. Don't pass raw strings like `"BTCUSDT"` to shared methods.
 
+## Symbol metadata and catalogs
+
+In 12.2.0, `SharedSpotSymbol` and `SharedFuturesSymbol` include `DisplayName` and base/quote asset classification through `SharedAssetType` (`Crypto`, `Fiat`, `TradFi`) and `SharedAssetSubType` (`StableCoin`, `Equity`, `Commodity`). Pass the matching base/quote filters to `GetSymbolsRequest` when discovery should return only a class of markets.
+
+After calling `GetSpotSymbolsAsync`, `ISpotSymbolRestClient.SpotSymbolCatalog` maps asset and symbol names to shared metadata. `IFuturesSymbolRestClient.FuturesSymbolCatalog` works the same way after `GetFuturesSymbolsAsync`. Treat either property as unavailable before its corresponding request has populated the cache.
+
+When implementing an exchange library, use `LibraryHelpers.IsStableCoin`, `IsCommodity`, and `IsEquity` only as best-effort classifiers and supply exchange-specific additions where needed.
+
 ## Result pattern
 
 REST methods return `HttpResult<T>` and websocket subscription methods return `WebSocketResult<UpdateSubscription>`. Always check `.Success`. `.Exchange` property identifies which exchange responded — useful for logging.

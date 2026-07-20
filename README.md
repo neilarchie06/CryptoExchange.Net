@@ -127,6 +127,16 @@ Various:
   * PlatformInfo now required support environment names in the constructor
 
 ## Release notes
+* Version 12.2.0 - 20 Jul 2026
+    * Added SpotSymbolCatalog to Shared ISpotSymbolRestClient interface
+    * Added FuturesSymbolCatalog to Shared IFuturesSymbolRestClient interface
+    * Added BaseAssetType, BaseAssetSubType, QuoteAssetType and QuoteAssetSubType to GetSymbolsRequest model
+    * Added DisplayName to SharedSpotSymbol and SharedFuturesSymbol models
+    * Added BaseAssetType, BaseAssetSubType, QuoteAssetType and QuoteAssetSubType to SharedSpotSymbol and SharedFuturesSymbol models
+    * Added IsStableCoin, IsCommodity and IsEquity helper methods to LibraryHelpers
+    * Added DebuggerDisplay attributes to Shared models
+    * Fixed socket connection combine calculations
+
 * Version 12.1.1 - 11 Jul 2026
     * Added timestamp deserialization support for yyyy-MM-dd HH:mm:ss.ffffff+00:00:00
 

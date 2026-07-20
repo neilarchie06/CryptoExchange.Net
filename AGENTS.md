@@ -67,6 +67,24 @@ var btcusdtPerp = new SharedSymbol(TradingMode.PerpetualLinear, "BTC", "USDT");
 
 For exchanges that use exotic asset names, see the AssetAliases configuration.
 
+## Symbol Metadata and Asset Classification
+
+Since CryptoExchange.Net 12.2.0, shared symbol responses describe both sides of a market with `BaseAssetType`, `BaseAssetSubType`, `QuoteAssetType`, and `QuoteAssetSubType`. `SharedAssetType` distinguishes `Crypto`, `Fiat`, and `TradFi`; `SharedAssetSubType` distinguishes `StableCoin`, `Equity`, and `Commodity`. `SharedSpotSymbol` and `SharedFuturesSymbol` also expose `DisplayName`.
+
+The same fields on `GetSymbolsRequest` filter spot or futures symbol discovery:
+
+```csharp
+var request = new GetSymbolsRequest(
+    baseAssetType: SharedAssetType.Crypto,
+    quoteAssetSubType: SharedAssetSubType.StableCoin);
+
+var result = await symbolClient.GetSpotSymbolsAsync(request);
+```
+
+After calling `GetSpotSymbolsAsync` or `GetFuturesSymbolsAsync`, use the client's `SpotSymbolCatalog` or `FuturesSymbolCatalog` to look up normalized asset and symbol metadata by name. The catalog is unavailable until the corresponding symbol request has populated the cache.
+
+For exchange-library implementations, `LibraryHelpers.IsStableCoin`, `IsCommodity`, and `IsEquity` provide best-effort classification of known assets and accept exchange-specific additions. These helpers are heuristics, not an exhaustive source of truth.
+
 ## Available Shared Interfaces
 
 **REST:**
