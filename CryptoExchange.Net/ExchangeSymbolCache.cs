@@ -33,7 +33,7 @@ namespace CryptoExchange.Net
             if (keyedCache != null && DateTime.UtcNow - keyedCache.UpdateTime < TimeSpan.FromMinutes(60))
                 return;
 
-            exchangeInfo.Set(key, new ExchangeInfo(DateTime.UtcNow, updateData.ToDictionary(x => x.Name, x => x.SharedSymbol)));
+            exchangeInfo.Set(key, new ExchangeInfo(DateTime.UtcNow, updateData.ToDictionary(x => x.Name, x => x)));
         }
 
         /// <summary>
@@ -118,6 +118,22 @@ namespace CryptoExchange.Net
             return exchangeInfo.ParseSymbol(key, symbolName);
         }
 
+        /// <summary>
+        /// Get a symbol catalog for a specific exchange(topic) and environment. Only available if <see cref="UpdateSymbolInfo(string, string, string?, SharedSpotSymbol[])"/> has been called previously.
+        /// </summary>
+        /// <param name="exchange">Exchange name</param>
+        /// <param name="topicId">Id for the provided data</param>
+        /// <param name="environmentName">Trade environment</param>
+        /// <param name="key">Additional data set identification key</param>
+        public static SharedSymbolCatalog? GetSymbolCatalog(string exchange, string topicId, string environmentName, string? key)
+        {
+            var id = topicId + environmentName;
+            if (!_symbolInfos.TryGetValue(id, out var exchangeInfo))
+                return null;
+
+            return exchangeInfo.GetSymbolCatalog(exchange, key);
+        }
+
         class ExchangeKeyedCache
         {
             private ExchangeInfo? _noKeyCache;
@@ -163,7 +179,7 @@ namespace CryptoExchange.Net
 
             public SharedSymbol? ParseSymbol(string? key, string symbolName)
             {
-                SharedSymbol? symbolInfo = null;
+                SharedSpotSymbol? symbolInfo = null;
                 if (key == null)
                 {
                     if (_noKeyCache != null)
@@ -173,7 +189,7 @@ namespace CryptoExchange.Net
 
                         return new SharedSymbol(symbolInfo.TradingMode, symbolInfo.BaseAsset, symbolInfo.QuoteAsset, symbolName)
                         {
-                            DeliverTime = symbolInfo.DeliverTime
+                            DeliverTime = (symbolInfo as SharedFuturesSymbol)?.DeliveryTime
                         };
                     }
 
@@ -183,7 +199,7 @@ namespace CryptoExchange.Net
                         {
                             return new SharedSymbol(symbolInfo.TradingMode, symbolInfo.BaseAsset, symbolInfo.QuoteAsset, symbolName)
                             {
-                                DeliverTime = symbolInfo.DeliverTime
+                                DeliverTime = (symbolInfo as SharedFuturesSymbol)?.DeliveryTime
                             };
                         }
                     }
@@ -199,7 +215,7 @@ namespace CryptoExchange.Net
                 {
                     return new SharedSymbol(symbolInfo.TradingMode, symbolInfo.BaseAsset, symbolInfo.QuoteAsset, symbolName)
                     {
-                        DeliverTime = symbolInfo.DeliverTime
+                        DeliverTime = (symbolInfo as SharedFuturesSymbol)?.DeliveryTime
                     };
                 }
 
@@ -265,7 +281,7 @@ namespace CryptoExchange.Net
                     {
                         return _noKeyCache.Symbols
                             .Where(x => x.Value.BaseAsset.Equals(baseAsset, StringComparison.InvariantCultureIgnoreCase))
-                            .Select(x => x.Value)
+                            .Select(x => x.Value.SharedSymbol)
                             .ToArray();
                     }
 
@@ -274,7 +290,7 @@ namespace CryptoExchange.Net
                     {
                         result.AddRange(cache.Symbols
                             .Where(x => x.Value.BaseAsset.Equals(baseAsset, StringComparison.InvariantCultureIgnoreCase))
-                            .Select(x => x.Value));
+                            .Select(x => x.Value.SharedSymbol));
                     }
 
                     return result.ToArray();
@@ -286,8 +302,53 @@ namespace CryptoExchange.Net
 
                 return exchangeInfo.Symbols
                     .Where(x => x.Value.BaseAsset.Equals(baseAsset, StringComparison.InvariantCultureIgnoreCase))
-                    .Select(x => x.Value)
+                    .Select(x => x.Value.SharedSymbol)
                     .ToArray();
+            }
+
+            internal SharedSymbolCatalog? GetSymbolCatalog(string exchange, string? key)
+            {
+                IEnumerable<SharedSpotSymbol> cachedSymbols;
+                if (key == null)
+                {
+                    if (_noKeyCache != null)
+                        cachedSymbols = _noKeyCache.Symbols.Values;
+                    else
+                        cachedSymbols = _keyedCache.Values.SelectMany(x => x.Symbols.Values);
+                }
+                else
+                {
+                    if (!_keyedCache.TryGetValue(key, out var exchangeInfo) || exchangeInfo == null)
+                        return null;
+
+                    cachedSymbols = exchangeInfo.Symbols.Values;
+                }
+
+                var assets = new Dictionary<string, SharedAssetInfo>();
+                var symbols = new Dictionary<string, SharedSpotSymbol>();
+                foreach (var symbol in cachedSymbols)
+                {
+                    if (!assets.TryGetValue(symbol.BaseAsset, out var baseAssetInfo))
+                    {
+                        baseAssetInfo = new SharedAssetInfo(symbol.BaseAsset, symbol.BaseAssetType, symbol.BaseAssetSubType);
+                        assets.Add(symbol.BaseAsset, baseAssetInfo);
+                    }
+
+                    if (!assets.TryGetValue(symbol.QuoteAsset, out var quoteAssetInfo))
+                    {
+                        quoteAssetInfo = new SharedAssetInfo(symbol.QuoteAsset, symbol.QuoteAssetType, symbol.QuoteAssetSubType);
+                        assets.Add(symbol.QuoteAsset, quoteAssetInfo);
+                    }
+
+                    symbols.Add(symbol.Name, symbol);
+                }
+
+                return new SharedSymbolCatalog
+                {
+                    Exchange = exchange,
+                    Assets = assets,
+                    Symbols = symbols
+                };
             }
         }
 
@@ -295,9 +356,9 @@ namespace CryptoExchange.Net
         class ExchangeInfo
         {
             public DateTime UpdateTime { get; set; }
-            public Dictionary<string, SharedSymbol> Symbols { get; set; }
+            public Dictionary<string, SharedSpotSymbol> Symbols { get; set; }
 
-            public ExchangeInfo(DateTime updateTime, Dictionary<string, SharedSymbol> symbols)
+            public ExchangeInfo(DateTime updateTime, Dictionary<string, SharedSpotSymbol> symbols)
             {
                 UpdateTime = updateTime;
                 Symbols = symbols;

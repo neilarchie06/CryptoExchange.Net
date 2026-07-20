@@ -1,13 +1,17 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Data;
+using System.Diagnostics;
 
 namespace CryptoExchange.Net.SharedApis
 {
     /// <summary>
     /// Symbol info
     /// </summary>
-    [DebuggerDisplay("{TradingMode} {Name,nq}")]
+    [DebuggerDisplay("{DebugView,nq}")]
     public record SharedSpotSymbol
     {
+        private string DebugView => $"{TradingMode} {(DisplayName ?? Name)} - {BaseAssetType} {BaseAssetSubType}";
+
         /// <summary>
         /// The trading mode of the symbol
         /// </summary>
@@ -24,6 +28,10 @@ namespace CryptoExchange.Net.SharedApis
         /// The name of the symbol
         /// </summary>
         public string Name { get; set; }
+        /// <summary>
+        /// The display name of the symbol
+        /// </summary>
+        public string? DisplayName { get; set; }
         /// <summary>
         /// Minimal quantity of an order in the base asset
         /// </summary>
@@ -60,6 +68,22 @@ namespace CryptoExchange.Net.SharedApis
         /// Whether the symbol is currently available for trading
         /// </summary>
         public bool Trading { get; set; }
+        /// <summary>
+        /// Base asset type
+        /// </summary>
+        public SharedAssetType BaseAssetType { get; set; }
+        /// <summary>
+        /// Base asset sub type
+        /// </summary>
+        public SharedAssetSubType? BaseAssetSubType { get; set; }
+        /// <summary>
+        /// Quote asset type
+        /// </summary>
+        public SharedAssetType QuoteAssetType { get; set; }
+        /// <summary>
+        /// Quote asset sub type
+        /// </summary>
+        public SharedAssetSubType? QuoteAssetSubType { get; set; }
 
         /// <summary>
         /// ctor
