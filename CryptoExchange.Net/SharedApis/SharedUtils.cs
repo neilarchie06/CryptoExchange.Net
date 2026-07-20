@@ -178,6 +178,9 @@ namespace CryptoExchange.Net.SharedApis
             return result.ToArray();
         }
 
+        /// <summary>
+        /// Apply symbols request filter for asset type and trading mode
+        /// </summary>
         public static T[] ApplySymbolFilter<T>(T[] symbols, GetSymbolsRequest request) where T : SharedSpotSymbol
         {
             IEnumerable<T> resultData = symbols;
