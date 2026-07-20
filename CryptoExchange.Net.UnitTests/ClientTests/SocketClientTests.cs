@@ -139,6 +139,68 @@ namespace CryptoExchange.Net.UnitTests.ClientTests
         }
 
         [TestCase()]
+        public async Task BatchedSubscription_Should_NotExceedIndividualCombineTarget()
+        {
+            // arrange
+            var client = new TestSocketClient(options =>
+            {
+                options.SocketSubscriptionsCombineTarget = 10;
+                options.SocketIndividualSubscriptionCombineTarget = 10;
+            });
+            TestHelpers.ConfigureSocketClient(client, "wss://localhost");
+
+            // act
+            await client.ApiClient1.SubscribeToUpdatesAsync<TestObject>(x => { }, false, default, individualSubscriptionCount: 6);
+            TestHelpers.ConfigureSocketClient(client, "wss://localhost");
+            await client.ApiClient1.SubscribeToUpdatesAsync<TestObject>(x => { }, false, default, individualSubscriptionCount: 6);
+
+            // assert
+            Assert.That(client.ApiClient1._socketConnections.Count == 2);
+            Assert.That(client.ApiClient1._socketConnections.Values.All(connection => connection.Subscriptions.Sum(subscription => subscription.IndividualSubscriptionCount) <= 10));
+        }
+
+        [TestCase()]
+        public async Task BatchedSubscription_FullIndividualConnection_Should_NotPreventEligibleConnectionReuse()
+        {
+            // arrange
+            var client = new TestSocketClient(options =>
+            {
+                options.SocketSubscriptionsCombineTarget = 5;
+                options.SocketIndividualSubscriptionCombineTarget = 10;
+            });
+            TestHelpers.ConfigureSocketClient(client, "wss://localhost");
+            await client.ApiClient1.SubscribeToUpdatesAsync<TestObject>(x => { }, false, default);
+            await client.ApiClient1.SubscribeToUpdatesAsync<TestObject>(x => { }, false, default);
+
+            TestHelpers.ConfigureSocketClient(client, "wss://localhost");
+            await client.ApiClient1.SubscribeToUpdatesAsync<TestObject>(x => { }, false, default, individualSubscriptionCount: 10);
+
+            TestHelpers.ConfigureSocketClient(client, "wss://localhost");
+
+            // act
+            await client.ApiClient1.SubscribeToUpdatesAsync<TestObject>(x => { }, false, default);
+
+            // assert
+            Assert.That(
+                client.ApiClient1._socketConnections.Count,
+                Is.EqualTo(2),
+                "The eligible connection should be reused instead of opening a new connection after selecting a full individual-subscription connection");
+
+            var fullConnection = client.ApiClient1._socketConnections.Values
+                .Single(connection => connection.Subscriptions.Sum(subscription => subscription.IndividualSubscriptionCount) == 10);
+            Assert.That(
+                fullConnection.UserSubscriptionCount,
+                Is.EqualTo(1),
+                "The full connection should not receive the normal subscription");
+
+            var eligibleConnection = client.ApiClient1._socketConnections.Values.Single(connection => connection != fullConnection);
+            Assert.That(
+                eligibleConnection.UserSubscriptionCount,
+                Is.EqualTo(3),
+                "The existing eligible connection should receive the normal subscription");
+        }
+
+        [TestCase()]
         public async Task ErrorResponse_ShouldNot_ConfirmSubscription()
         {
             // arrange
