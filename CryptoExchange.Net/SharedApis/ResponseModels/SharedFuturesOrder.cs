@@ -54,10 +54,18 @@ namespace CryptoExchange.Net.SharedApis
         /// Order price
         /// </summary>
         public decimal? OrderPrice { get; set; }
+        private decimal? _averagePrice;
         /// <summary>
-        /// Average price
+        /// Average fill price
         /// </summary>
-        public decimal? AveragePrice { get; set; }
+        public decimal? AveragePrice
+        {
+            get => _averagePrice > 0 ? _averagePrice
+                : (QuantityFilled?.QuantityInBaseAsset > 0 && QuantityFilled?.QuantityInQuoteAsset > 0
+                    ? QuantityFilled.QuantityInQuoteAsset / QuantityFilled.QuantityInBaseAsset
+                    : null);
+            set => _averagePrice = value;
+        }
         /// <summary>
         /// Client order id
         /// </summary>
