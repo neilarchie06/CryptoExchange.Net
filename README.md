@@ -127,6 +127,12 @@ Various:
   * PlatformInfo now required support environment names in the constructor
 
 ## Release notes
+* Version 12.3.0 - 23 Jul 2026
+    * Added calculation of AveragePrice on Shared order models if data is available and AveragePrice is not set
+    * Extracted ConnectionCanBeUsedFor method in SocketApiClient for easier custom logic implementation
+    * Updated some Shared APIs error messages
+    * Remove duplicate warnings from testing output
+
 * Version 12.2.0 - 20 Jul 2026
     * Added SpotSymbolCatalog to Shared ISpotSymbolRestClient interface
     * Added FuturesSymbolCatalog to Shared IFuturesSymbolRestClient interface
