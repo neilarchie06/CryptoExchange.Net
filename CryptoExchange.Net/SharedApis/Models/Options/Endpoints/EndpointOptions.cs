@@ -68,9 +68,14 @@ namespace CryptoExchange.Net.SharedApis
                 return ArgumentError.Invalid("TradingMode", $"TradingMode.{tradingMode} is not supported, supported types: {string.Join(", ", supportedTradingModes)}");
 
             foreach (var param in RequiredExchangeParameters)
-            {                
+            {
                 if (param.Names!.All(x => ExchangeParameters.HasValue(exchangeParameters, Exchange, x, param.ValueType) != true))
-                    return ArgumentError.Invalid(string.Join("/", param.Names!), $"One of exchange parameters `{string.Join(", ", param.Names!)}` for exchange `{Exchange}` should be provided. Example: {param.ExampleValue}");
+                {
+                    if (param.Names.Length == 1)
+                        return ArgumentError.Invalid(string.Join("/", param.Names!), $"Exchange parameter `{param.Names[0]}` for exchange `{Exchange}` should be provided. Example: {param.ExampleValue}");
+                    else
+                        return ArgumentError.Invalid(string.Join("/", param.Names!), $"One of exchange parameters `{string.Join(", ", param.Names!)}` for exchange `{Exchange}` should be provided. Example: {param.ExampleValue}");
+                }
             }
 
             return null;
@@ -149,7 +154,12 @@ namespace CryptoExchange.Net.SharedApis
             foreach (var param in RequiredOptionalParameters)
             {
                 if (param.Names!.All(x => _requestProperties.Single(p => p.Name == x).GetValue(request, null) == null))
-                    return ArgumentError.Invalid(string.Join("/", param.Names!), $"One of optional parameters `{string.Join(", ", param.Names!)}` for exchange `{Exchange}` should be provided. Example: {param.ExampleValue}");
+                {
+                    if (param.Names.Length == 1)
+                        return ArgumentError.Invalid(string.Join("/", param.Names!), $"Optional parameter `{param.Names[0]}` for exchange `{Exchange}` should be provided. Example: {param.ExampleValue}");
+                    else
+                        return ArgumentError.Invalid(string.Join("/", param.Names!), $"One of optional parameters `{string.Join(", ", param.Names!)}` for exchange `{Exchange}` should be provided. Example: {param.ExampleValue}");
+                }
             }
 
             if (request is SharedSymbolRequest symbolsRequest)
