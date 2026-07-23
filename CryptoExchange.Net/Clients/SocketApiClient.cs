@@ -626,6 +626,21 @@ namespace CryptoExchange.Net.Clients
         }
 
         /// <summary>
+        /// Whether the connection can be used for a new subscription or query with the provided parameters
+        /// </summary>
+        /// <param name="connection">The connection to check</param>
+        /// <param name="address">The address set by the request</param>
+        /// <param name="authenticated">Whether the request needs an authenticated connection</param>
+        /// <param name="topic">Topic of the request</param>
+        /// <returns>True if connection can be used</returns>
+        protected virtual bool ConnectionCanBeUsedFor(SocketConnection connection, string address, bool authenticated, string? topic = null)
+        {
+            return connection.ConnectionUriString.Equals(address.TrimEnd('/'), StringComparison.Ordinal)
+                && connection.ApiClient.ClientName.Equals(ClientName, StringComparison.Ordinal)
+                && (AllowTopicsOnTheSameConnection || !connection.Topics.Contains(topic));
+        }
+
+        /// <summary>
         /// Gets a connection for a new subscription or query. Can be an existing if there are open position or a new one.
         /// </summary>
         /// <param name="address">The address the socket is for</param>
@@ -643,10 +658,7 @@ namespace CryptoExchange.Net.Clients
             string? topic = null,
             int individualSubscriptionCount = 1)
         {
-            var socketQuery = _socketConnections.Where(s => s.Value.ConnectionUriString.Equals(address.TrimEnd('/'), StringComparison.Ordinal)
-                                                         && s.Value.ApiClient.ClientName.Equals(ClientName, StringComparison.Ordinal)
-                                                         && (AllowTopicsOnTheSameConnection || !s.Value.Topics.Contains(topic)))
-                                                .Select(x => x.Value); // Don't ToList this so the query is executed again when called
+            var socketQuery = _socketConnections.Where(s => ConnectionCanBeUsedFor(s.Value, address, authenticated, topic)).Select(x => x.Value); // Don't ToList this so the query is executed again when called
 
             // If all current socket connections are reconnecting or resubscribing wait for that to finish as we can probably use the existing connection
             var delayStart = DateTime.UtcNow;
